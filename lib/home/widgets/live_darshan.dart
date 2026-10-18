@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:video_player/video_player.dart';
 import 'dart:ui';
 
 class LiveDarshan extends StatefulWidget {
@@ -7,7 +7,7 @@ class LiveDarshan extends StatefulWidget {
 
   const LiveDarshan({
     super.key,
-    this.videoUrl = 'https://www.youtube.com/watch?v=ZDVV2WSmiXk',
+    this.videoUrl = 'https://cam3.pc.cdn.bitgravity.com/cam/live/feed006/Saibaba/temple/feed/playlist.m3u8',
   });
 
   @override
@@ -15,7 +15,7 @@ class LiveDarshan extends StatefulWidget {
 }
 
 class _LiveDarshanState extends State<LiveDarshan> with TickerProviderStateMixin {
-  late YoutubePlayerController _controller;
+  late VideoPlayerController _controller;
   bool isMuted = true;
   bool isLoading = true;
   late AnimationController _blinkController;
@@ -25,63 +25,43 @@ class _LiveDarshanState extends State<LiveDarshan> with TickerProviderStateMixin
   void initState() {
     super.initState();
 
-    final videoId = YoutubePlayerController.convertUrlToId(widget.videoUrl);
-    _controller = YoutubePlayerController(
-      params: const YoutubePlayerParams(
-        showControls: true, // Enable controls to avoid error 152
-        mute: false, // Don't mute initially
-        showFullscreenButton: true,
-        loop: true,
-        enableJavaScript: true,
-        playsInline: true,
-        strictRelatedVideos: false, // Allow related videos
-        enableCaption: false,
-        showVideoAnnotations: false,
-        interfaceLanguage: 'en',
-      ),
+    // Initialize video player with HLS stream
+    _controller = VideoPlayerController.networkUrl(
+      Uri.parse(widget.videoUrl),
     );
 
-    if (videoId != null) {
-      // Load and play immediately
-      _controller.loadVideoById(
-        videoId: videoId,
-        startSeconds: 0.0,
-      );
+    // Initialize and configure the player
+    _controller.initialize().then((_) {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
 
-      // Listen for state changes
-      _controller.listen((event) {
-        if (mounted) {
-          // Auto-play when ready
-          if (event.playerState == PlayerState.cued) {
-            _controller.playVideo();
-          }
-          // Keep playing if paused
-          else if (event.playerState == PlayerState.paused) {
-            Future.delayed(const Duration(milliseconds: 500), () {
-              if (mounted) {
-                _controller.playVideo();
-              }
-            });
-          }
-          // Hide loading when buffering or playing
-          else if (event.playerState == PlayerState.buffering ||
-                   event.playerState == PlayerState.playing) {
-            if (isLoading) {
-              setState(() {
-                isLoading = false;
-              });
-            }
-          }
-        }
-      });
+        // Set to muted by default
+        _controller.setVolume(0.0);
 
-      // Initial play attempt
-      Future.delayed(const Duration(milliseconds: 1000), () {
-        if (mounted) {
-          _controller.playVideo();
-        }
-      });
-    }
+        // Set to loop
+        _controller.setLooping(true);
+
+        // Start playing automatically
+        _controller.play();
+      }
+    }).catchError((error) {
+      print('Error initializing video player: $error');
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    });
+
+    // Listen for player state changes
+    _controller.addListener(() {
+      if (mounted && !_controller.value.isPlaying && _controller.value.isInitialized) {
+        // Auto-restart if paused
+        _controller.play();
+      }
+    });
 
     // Blinking animation for live indicator
     _blinkController = AnimationController(
@@ -94,7 +74,7 @@ class _LiveDarshanState extends State<LiveDarshan> with TickerProviderStateMixin
 
   @override
   void dispose() {
-    _controller.close();
+    _controller.dispose();
     _blinkController.dispose();
     super.dispose();
   }
@@ -105,9 +85,9 @@ class _LiveDarshanState extends State<LiveDarshan> with TickerProviderStateMixin
     });
 
     if (isMuted) {
-      await _controller.mute();
+      await _controller.setVolume(0.0);
     } else {
-      await _controller.unMute();
+      await _controller.setVolume(1.0);
     }
 
     print('Live Darshan: Mute toggled to ${isMuted ? "muted" : "unmuted"}');
@@ -158,15 +138,20 @@ class _LiveDarshanState extends State<LiveDarshan> with TickerProviderStateMixin
                         height: double.infinity,
                         color: Colors.black,
                       ),
-                      // YouTube Player
-                      SizedBox(
-                        width: double.infinity,
-                        height: double.infinity,
-                        child: YoutubePlayer(
-                          controller: _controller,
-                          aspectRatio: 16 / 9,
+                      // Video Player
+                      if (_controller.value.isInitialized)
+                        SizedBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                          child: FittedBox(
+                            fit: BoxFit.cover,
+                            child: SizedBox(
+                              width: _controller.value.size.width,
+                              height: _controller.value.size.height,
+                              child: VideoPlayer(_controller),
+                            ),
+                          ),
                         ),
-                      ),
                       // Loading indicator
                       if (isLoading)
                         Container(

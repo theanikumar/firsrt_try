@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   youtube_player_iframe: ^6.0.2
   webview_flutter: ^4.9.0
+  video_player: ^2.9.1
   provider: ^6.1.2
   url_launcher: ^6.3.0
 
