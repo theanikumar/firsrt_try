@@ -28,42 +28,57 @@ class _LiveDarshanState extends State<LiveDarshan> with TickerProviderStateMixin
     final videoId = YoutubePlayerController.convertUrlToId(widget.videoUrl);
     _controller = YoutubePlayerController(
       params: const YoutubePlayerParams(
-        showControls: false,
-        mute: true,
-        showFullscreenButton: false,
+        showControls: true, // Enable controls to avoid error 152
+        mute: false, // Don't mute initially
+        showFullscreenButton: true,
         loop: true,
         enableJavaScript: true,
         playsInline: true,
-        strictRelatedVideos: true,
+        strictRelatedVideos: false, // Allow related videos
         enableCaption: false,
         showVideoAnnotations: false,
         interfaceLanguage: 'en',
-        color: 'white',
       ),
     );
 
     if (videoId != null) {
-      _controller.loadVideoById(videoId: videoId);
+      // Load and play immediately
+      _controller.loadVideoById(
+        videoId: videoId,
+        startSeconds: 0.0,
+      );
 
-      // Auto-play and keep playing
+      // Listen for state changes
       _controller.listen((event) {
-        if (event.playerState == PlayerState.paused || event.playerState == PlayerState.cued) {
-          _controller.playVideo();
+        if (mounted) {
+          // Auto-play when ready
+          if (event.playerState == PlayerState.cued) {
+            _controller.playVideo();
+          }
+          // Keep playing if paused
+          else if (event.playerState == PlayerState.paused) {
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) {
+                _controller.playVideo();
+              }
+            });
+          }
+          // Hide loading when buffering or playing
+          else if (event.playerState == PlayerState.buffering ||
+                   event.playerState == PlayerState.playing) {
+            if (isLoading) {
+              setState(() {
+                isLoading = false;
+              });
+            }
+          }
         }
       });
 
-      // Give it some time to load and start playing
-      Future.delayed(const Duration(milliseconds: 1500), () {
+      // Initial play attempt
+      Future.delayed(const Duration(milliseconds: 1000), () {
         if (mounted) {
           _controller.playVideo();
-        }
-      });
-
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) {
-          setState(() {
-            isLoading = false;
-          });
         }
       });
     }
