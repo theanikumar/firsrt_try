@@ -1,5 +1,6 @@
 package com.example.first_try
 
+import android.app.Application
 import android.os.Build
 import android.os.Bundle
 import android.webkit.WebView
@@ -17,7 +18,8 @@ class MainActivity : FlutterActivity() {
         // Initialize WebView for Android
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                val processName = getProcessName()
+                // CHANGED: Added Application. prefix to correctly reference the static system method
+                val processName = Application.getProcessName()
                 if (packageName != processName) {
                     WebView.setDataDirectorySuffix(processName)
                 }
