@@ -14,6 +14,12 @@ class SplashScreen extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/image/splash/splash_background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
             // Background image will be added here manually later
             // For now, using solid color background
 

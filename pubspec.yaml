@@ -64,6 +64,9 @@ flutter:
     - assets/image/onboarding/sai_baba.png
     - assets/image/onboarding/diya.png
     - assets/image/player_screen/sai_baba.png
+    - assets/image/splash/splash_background.png
+    - assets/image/splash/splash-baba.png
+    - assets/image/sevak/model.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
