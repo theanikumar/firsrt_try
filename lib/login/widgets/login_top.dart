@@ -89,7 +89,7 @@ class _LoginTopState extends State<LoginTop>
           // Sai Baba image
           ClipOval(
             child: Image.asset(
-              '/Users/admin/flutter_prac/first_try/assets/image/onboarding/sai_baba.png',
+              'assets/image/onboarding/sai_baba.png',
               width: 80,
               height: 80,
               fit: BoxFit.cover,

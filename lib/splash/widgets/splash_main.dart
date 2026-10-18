@@ -97,7 +97,7 @@ class _SplashMainState extends State<SplashMain>
             ),
             child: ClipOval(
               child: Image.asset(
-                '/Users/admin/flutter_prac/first_try/assets/image/splash/splash-baba.png',
+                'assets/image/splash/splash-baba.png',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
