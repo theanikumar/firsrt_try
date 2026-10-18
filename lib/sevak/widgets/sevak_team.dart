@@ -407,7 +407,7 @@ class SevakTeamData {
       quote: 'Following Baba\'s path, to get Baba.',
       quoteIcon: Icons.directions_walk_outlined,
       description: 'Dedicated to crafting serene digital spaces with sacred multilingual support, intuitive audio-reading synchrony, and fluid meditative mobile experiences for Baba\'s devotees.',
-      imagePath: '/Users/admin/flutter_prac/first_try/assets/image/sevak/model.png',
+      imagePath: 'assets/image/sevak/model.png',
       roleIcon: Icons.architecture,
       socialMedias: [
         const SocialMedia(
@@ -439,7 +439,7 @@ class SevakTeamData {
       quote: 'Spreading Baba\'s glory worldwide.',
       quoteIcon: Icons.public,
       description: 'A devoted voice bringing Sai Baba\'s leelas and bhajans to life, creating soul-stirring audio experiences that touch hearts across continents and connect devotees through sacred melodies.',
-      imagePath: '/Users/admin/flutter_prac/first_try/assets/image/sevak/model.png',
+      imagePath: 'assets/image/sevak/model.png',
       roleIcon: Icons.graphic_eq,
       socialMedias: [
         const SocialMedia(
@@ -471,7 +471,7 @@ class SevakTeamData {
       quote: 'Sharing Baba\'s wisdom with all.',
       quoteIcon: Icons.menu_book,
       description: 'A learned devotee offering guidance on authentic Satcharitra interpretations, ensuring content accuracy, and helping shape Sai Vani as a trustworthy spiritual companion for the global parivar.',
-      imagePath: '/Users/admin/flutter_prac/first_try/assets/image/sevak/model.png',
+      imagePath: 'assets/image/sevak/model.png',
       roleIcon: Icons.verified,
       socialMedias: [
         const SocialMedia(

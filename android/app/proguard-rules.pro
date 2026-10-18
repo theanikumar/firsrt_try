@@ -1,6 +1,14 @@
 # Keep WebView classes for YouTube player
 -keep class android.webkit.** { *; }
 -keep class androidx.webkit.** { *; }
+-dontwarn android.webkit.**
+-dontwarn androidx.webkit.**
+
+# WebView JavaScript Bridge
+-keepattributes JavascriptInterface
+-keep class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
 
 # Keep JavaScript interface for YouTube player
 -keepclassmembers class * {
