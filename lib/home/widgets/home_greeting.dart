@@ -70,47 +70,49 @@ class HomeGreeting extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          // 2. Badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFDDB8).withOpacity(0.5),
-              borderRadius: BorderRadius.circular(9999),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  offset: const Offset(0, 1),
-                  blurRadius: 2,
-                  spreadRadius: 0,
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // 2_a Icon
-                const Icon(
-                  Icons.spa,
-                  color: Color(0xFF9A4100),
-                  size: 16,
-                ),
-                const SizedBox(width: 6),
-                // 2_b Text
-                Text(
-                  'Day $dayStreak Streak',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 10,
-                    height: 1.4, // Line height 14 / font size 10 = 1.4
-                    letterSpacing: -0.25,
-                    color: Color(0xFF2A1700),
-                    decoration: TextDecoration.none,
+          // 2. Badge (hidden until streaks are tracked)
+          if (dayStreak > 0) ...[
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFDDB8).withOpacity(0.5),
+                borderRadius: BorderRadius.circular(9999),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    offset: const Offset(0, 1),
+                    blurRadius: 2,
+                    spreadRadius: 0,
                   ),
-                ),
-              ],
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 2_a Icon
+                  const Icon(
+                    Icons.spa,
+                    color: Color(0xFF9A4100),
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  // 2_b Text
+                  Text(
+                    'Day $dayStreak Streak',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 10,
+                      height: 1.4, // Line height 14 / font size 10 = 1.4
+                      letterSpacing: -0.25,
+                      color: Color(0xFF2A1700),
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );

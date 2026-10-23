@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-import '../../utils/app_strings.dart';
 import '../models/bootstrap.dart';
 import '../models/content.dart';
 import '../models/offering.dart';
@@ -52,8 +51,6 @@ class BootstrapProvider extends ChangeNotifier {
 
     try {
       _data = await _content.bootstrap();
-      final defaultLanguage = _data?.defaultLanguage ?? 'en';
-      AppStrings.setLanguage(defaultLanguage);
 
       try {
         _quote = await _content.dailyQuote();

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class QuickActions extends StatelessWidget {
-  const QuickActions({super.key});
+  final ValueChanged<int>? onTap;
+
+  const QuickActions({super.key, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -58,23 +60,26 @@ class QuickActions extends StatelessWidget {
 
   Widget _buildOptions() {
     final options = [
-      {'name': '108 Namavali', 'icon': Icons.looks_one, 'color': const Color(0xFF9A4100)},
-      {'name': '4 Aartis', 'icon': Icons.wb_sunny, 'color': const Color(0xFF855300)},
-      {'name': 'Udi & Prasad', 'icon': Icons.volunteer_activism, 'color': const Color(0xFF765700)},
-      {'name': 'Sai Leela', 'icon': Icons.auto_awesome, 'color': const Color(0xFFBD5611)},
+      {'name': 'Aartis', 'icon': Icons.wb_sunny, 'color': const Color(0xFF9A4100)},
+      {'name': 'Bhajans', 'icon': Icons.music_note, 'color': const Color(0xFF855300)},
+      {'name': 'Parayan', 'icon': Icons.menu_book, 'color': const Color(0xFF765700)},
+      {'name': 'Dhun', 'icon': Icons.self_improvement, 'color': const Color(0xFFBD5611)},
     ];
 
     return Row(
-      children: options.map((option) {
+      children: options.asMap().entries.map((entry) {
+        final index = entry.key;
+        final option = entry.value;
         return Expanded(
           child: Padding(
             padding: EdgeInsets.only(
-              right: option != options.last ? 8 : 0,
+              right: index != options.length - 1 ? 8 : 0,
             ),
             child: _buildOptionItem(
               name: option['name'] as String,
               icon: option['icon'] as IconData,
               color: option['color'] as Color,
+              onTap: () => onTap?.call(index),
             ),
           ),
         );
@@ -86,12 +91,10 @@ class QuickActions extends StatelessWidget {
     required String name,
     required IconData icon,
     required Color color,
+    required VoidCallback onTap,
   }) {
     return GestureDetector(
-      onTap: () {
-        // Handle option tap
-        print('$name tapped');
-      },
+      onTap: onTap,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(8),

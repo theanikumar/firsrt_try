@@ -71,6 +71,20 @@ class CatalogRepository {
     final data = await _api.get('/public/offerings/$id', authenticated: false);
     return Offering.fromJson(Map<String, dynamic>.from(data as Map));
   }
+
+  /// Best-effort play analytics. A failure here must never interrupt playback.
+  Future<void> reportPlay(int offeringId, {int plays = 1}) async {
+    if (offeringId <= 0) return;
+    try {
+      await _api.post(
+        '/public/play-events',
+        data: {'offering_id': offeringId, 'plays': plays},
+        authenticated: true,
+      );
+    } catch (_) {
+      // Analytics is optional.
+    }
+  }
 }
 
 int _asInt(dynamic value, {int fallback = 0}) {

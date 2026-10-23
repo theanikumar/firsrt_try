@@ -1,3 +1,5 @@
+import 'offering.dart';
+
 class Chapter {
   const Chapter({
     required this.number,
@@ -8,6 +10,8 @@ class Chapter {
     required this.summaryHi,
     required this.summaryMr,
     required this.durationMinutes,
+    required this.hasAudio,
+    this.audio,
   });
 
   final int number;
@@ -18,6 +22,8 @@ class Chapter {
   final String summaryHi;
   final String summaryMr;
   final int durationMinutes;
+  final bool hasAudio;
+  final Offering? audio;
 
   String titleFor(String language) {
     switch (language) {
@@ -51,6 +57,57 @@ class Chapter {
       summaryHi: (json['summary_hi'] ?? '').toString(),
       summaryMr: (json['summary_mr'] ?? '').toString(),
       durationMinutes: _asInt(json['duration_minutes']),
+      hasAudio: json['has_audio'] == true,
+      audio: json['audio'] is Map
+          ? Offering.fromJson(Map<String, dynamic>.from(json['audio'] as Map))
+          : null,
+    );
+  }
+}
+
+class Collection {
+  const Collection({
+    required this.id,
+    required this.slug,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.accent,
+    required this.sortOrder,
+    required this.items,
+  });
+
+  final int id;
+  final String slug;
+  final String title;
+  final String subtitle;
+  final String icon;
+  final String accent;
+  final int sortOrder;
+  final List<Offering> items;
+
+  int get itemCount => items.length;
+  int get playableCount => items.where((item) => item.isPlayable).length;
+
+  factory Collection.fromJson(Map<String, dynamic> json) {
+    final raw = json['items'];
+    final items = <Offering>[];
+    if (raw is List) {
+      for (final item in raw) {
+        if (item is Map) {
+          items.add(Offering.fromJson(Map<String, dynamic>.from(item)));
+        }
+      }
+    }
+    return Collection(
+      id: _asInt(json['id']),
+      slug: (json['slug'] ?? '').toString(),
+      title: (json['title'] ?? '').toString(),
+      subtitle: (json['subtitle'] ?? '').toString(),
+      icon: (json['icon'] ?? 'music_note').toString(),
+      accent: (json['accent'] ?? '#9A4100').toString(),
+      sortOrder: _asInt(json['sort_order']),
+      items: items,
     );
   }
 }

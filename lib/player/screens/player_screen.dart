@@ -49,7 +49,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   void _handleDropPressed() {
-    print('Drop button pressed - minimize player');
     Navigator.pop(context);
   }
 
@@ -57,37 +56,31 @@ class _PlayerScreenState extends State<PlayerScreen> {
     setState(() {
       _isSaved = !_isSaved;
     });
-    print('Save pressed: isSaved = $_isSaved');
   }
 
   void _handlePlayPause() {
     final audioService = Provider.of<AudioService>(context, listen: false);
     audioService.togglePlayPause();
-    print('Play/Pause toggled');
   }
 
   void _handlePrevious() {
     final audioService = Provider.of<AudioService>(context, listen: false);
     audioService.playPrevious();
-    print('Previous song pressed');
   }
 
   void _handleNext() {
     final audioService = Provider.of<AudioService>(context, listen: false);
     audioService.playNext();
-    print('Next song pressed');
   }
 
   void _handleRewind() {
     final audioService = Provider.of<AudioService>(context, listen: false);
     audioService.rewind();
-    print('Rewind 15 seconds pressed');
   }
 
   void _handleForward() {
     final audioService = Provider.of<AudioService>(context, listen: false);
     audioService.forward();
-    print('Forward 15 seconds pressed');
   }
 
   @override
@@ -106,7 +99,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
               child: Column(
                 children: [
                   const AppHeader(
-                    streakCount: 7,
+                    streakCount: 0,
                     profileImageUrl: null,
                   ),
                   Expanded(
@@ -148,7 +141,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   children: [
                     // Header (fixed at top)
                     const AppHeader(
-                      streakCount: 7,
+                      streakCount: 0,
                       profileImageUrl: null,
                     ),
 

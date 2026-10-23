@@ -50,4 +50,15 @@ class ContentRepository {
         .map((item) => TeamMember.fromJson(Map<String, dynamic>.from(item)))
         .toList();
   }
+
+  Future<List<Collection>> collections() async {
+    final data = await _api.get('/public/collections', authenticated: false);
+    final body = Map<String, dynamic>.from(data as Map);
+    final raw = body['items'];
+    if (raw is! List) return [];
+    return raw
+        .whereType<Map>()
+        .map((item) => Collection.fromJson(Map<String, dynamic>.from(item)))
+        .toList();
+  }
 }

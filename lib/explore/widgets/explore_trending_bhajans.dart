@@ -23,6 +23,7 @@ class ExploreTrendingBhajans extends StatelessWidget {
   final String updateText;
   final List<TrendingSongData> songs;
   final Function(String songName, String details)? onPlaySong;
+  final ValueChanged<Song>? onSongPlayed;
 
   const ExploreTrendingBhajans({
     super.key,
@@ -30,6 +31,7 @@ class ExploreTrendingBhajans extends StatelessWidget {
     this.updateText = 'Updated Today',
     required this.songs,
     this.onPlaySong,
+    this.onSongPlayed,
   });
 
   @override
@@ -225,10 +227,11 @@ class ExploreTrendingBhajans extends StatelessWidget {
               // Start playing the song
               await audioService.playSong(songData.song);
 
+              onSongPlayed?.call(songData.song);
+
               if (onPlaySong != null) {
                 onPlaySong!(songData.title, '${songData.artist} • ${songData.category}');
               }
-              print('Playing ${songData.title}');
             },
             child: Container(
               width: 40,

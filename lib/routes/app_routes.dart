@@ -8,6 +8,7 @@ import '../player/screens/player_screen.dart';
 import '../parayan/screens/parayan_screen.dart';
 import '../explore/screens/explore_screen.dart';
 import '../sevak/screens/sevak_screen.dart';
+import '../settings/screens/settings_screen.dart';
 
 class AppRoutes {
   // Route names
@@ -73,9 +74,8 @@ class AppRoutes {
           settings: settings,
         );
       case '/settings':
-        // TODO: Create settings screen
         return MaterialPageRoute(
-          builder: (_) => const HomeScreen(), // Temporary redirect
+          builder: (_) => const SettingsScreen(),
           settings: settings,
         );
       case '/':

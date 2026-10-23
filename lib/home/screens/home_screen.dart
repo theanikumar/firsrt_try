@@ -4,7 +4,7 @@ import '../widgets/home_header.dart';
 import '../widgets/home_main_container.dart';
 import '../widgets/home_greeting.dart';
 import '../widgets/live_darshan.dart';
-import '../widgets/parayan_progress.dart';
+import '../widgets/satcharitra_home_card.dart';
 import '../widgets/amrit_vani.dart';
 import '../widgets/quick_actions.dart';
 import '../widgets/devotional_melodies.dart';
@@ -12,7 +12,9 @@ import '../../common/bottom_navigation.dart';
 import '../../common/player_drawer.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/bootstrap/bootstrap_provider.dart';
+import '../../core/content/chapters_provider.dart';
 import '../../core/models/offering.dart';
+import '../../core/repositories/catalog_repository.dart';
 import '../../routes/app_routes.dart';
 import '../../services/audio_service.dart';
 
@@ -27,10 +29,17 @@ class _HomeScreenState extends State<HomeScreen> {
   // Player state
   bool _isSaved = false;
 
-  void _handleNavigation(int index) {
-    // Handle navigation to different screens
-    print('Navigate to index: $index');
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<ChaptersProvider>().ensureLoaded();
+      }
+    });
+  }
 
+  void _handleNavigation(int index) {
     switch (index) {
       case 0:
         // Parayan
@@ -58,18 +67,15 @@ class _HomeScreenState extends State<HomeScreen> {
   void _handlePlayPause() {
     final audioService = Provider.of<AudioService>(context, listen: false);
     audioService.togglePlayPause();
-    print('Play/Pause pressed via player drawer');
   }
 
   void _handleSave() {
     setState(() {
       _isSaved = !_isSaved;
     });
-    print('Save pressed: isSaved = $_isSaved');
   }
 
   void _handlePlayerTap() {
-    print('Player drawer tapped - navigate to player page');
     AppRoutes.navigateToPlayer(context);
   }
 
@@ -155,6 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final bootstrap = context.watch<BootstrapProvider>();
+    final chapters = context.watch<ChaptersProvider>();
     final language = auth.language;
     final quote = bootstrap.quote;
     final live = bootstrap.primaryLiveStream;
@@ -172,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     // Header (fixed at top)
                     HomeHeader(
-                      streakCount: 7,
+                      streakCount: 0,
                       profileImageUrl: auth.devotee?.avatarUrl.isNotEmpty == true
                           ? auth.devotee!.avatarUrl
                           : null,
@@ -188,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     // 1. Greeting
                     HomeGreeting(
-                      dayStreak: 3,
+                      dayStreak: 0,
                       userName: auth.displayName,
                     ),
 
@@ -196,13 +203,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (live != null && live.hasHls)
                       LiveDarshan(videoUrl: live.hlsUrl),
 
-                    // 3. Parayan Progress
-                    ParayanProgress(
-                      currentDay: 3,
-                      totalDays: 7,
-                      completedDays: 2,
-                      progressPercentage: 43.0,
-                      onResumePressed: () {
+                    // 3. Satcharitra index
+                    SatcharitraHomeCard(
+                      totalChapters:
+                          chapters.chapters.isEmpty ? 51 : chapters.chapters.length,
+                      recordedChapters: chapters.recordedCount,
+                      isLoading: chapters.isLoading,
+                      onPressed: () {
                         AppRoutes.navigateToParayan(context);
                       },
                     ),
@@ -216,12 +223,28 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
 
                     // 5. Quick Actions (Sacred Offerings)
-                    QuickActions(),
+                    QuickActions(
+                      onTap: (index) {
+                        if (index == 2) {
+                          AppRoutes.navigateToParayan(context);
+                        } else {
+                          AppRoutes.navigateToExplore(context);
+                        }
+                      },
+                    ),
 
                     // 6. Devotional Melodies
                     DevotionalMelodies(
                       songs: melodies,
                       onPlaySong: _playSong,
+                      onSongPlayed: (song) {
+                        final id = int.tryParse(song.id);
+                        if (id != null) {
+                          context
+                              .read<CatalogRepository>()
+                              .reportPlay(id);
+                        }
+                      },
                     ),
                   ],
                 ),

@@ -99,39 +99,41 @@ class HomeHeader extends StatelessWidget {
                 // 2. Right side - Streak and Profile
                 Row(
                   children: [
-                    // a. Streak container
-                    Container(
-                      height: 44,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(9999),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Fire icon
-                          const Icon(
-                            Icons.local_fire_department,
-                            color: Color(0xFFFEA619),
-                            size: 20,
-                          ),
-                          const SizedBox(width: 4),
-                          // Streak number
-                          Text(
-                            '$streakCount',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12,
-                              color: Color(0xFF9A4100),
-                              decoration: TextDecoration.none,
+                    // a. Streak container (hidden until streaks are tracked)
+                    if (streakCount > 0) ...[
+                      Container(
+                        height: 44,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(9999),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Fire icon
+                            const Icon(
+                              Icons.local_fire_department,
+                              color: Color(0xFFFEA619),
+                              size: 20,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 4),
+                            // Streak number
+                            Text(
+                              '$streakCount',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12,
+                                color: Color(0xFF9A4100),
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
+                      const SizedBox(width: 4),
+                    ],
                     // b. Profile container
                     Container(
                       width: 44,

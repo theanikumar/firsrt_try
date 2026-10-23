@@ -5,11 +5,13 @@ import '../../data/songs_data.dart';
 
 class DevotionalMelodies extends StatelessWidget {
   final Function(String songName, String details)? onPlaySong;
+  final ValueChanged<Song>? onSongPlayed;
   final List<Song>? songs;
 
   const DevotionalMelodies({
     super.key,
     this.onPlaySong,
+    this.onSongPlayed,
     this.songs,
   });
 
@@ -272,6 +274,8 @@ class DevotionalMelodies extends StatelessWidget {
 
               // Start playing the song
               await audioService.playSong(song, playlist: playlist);
+
+              onSongPlayed?.call(song);
 
               if (onPlaySong != null) {
                 onPlaySong(song.title, '${song.artist} • ${song.category}');

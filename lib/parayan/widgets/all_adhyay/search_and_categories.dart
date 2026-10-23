@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import '../../../utils/app_strings.dart';
 
+class SearchCategory {
+  final String label;
+  final int? count;
+
+  const SearchCategory(this.label, {this.count});
+}
+
 class SearchAndCategories extends StatelessWidget {
   final String selectedCategory;
   final Function(String) onCategorySelected;
   final Function(String)? onSearchChanged;
   final VoidCallback? onMicTap;
   final TextEditingController? searchController;
+  final List<SearchCategory> categories;
 
   const SearchAndCategories({
     super.key,
@@ -15,6 +23,7 @@ class SearchAndCategories extends StatelessWidget {
     this.onSearchChanged,
     this.onMicTap,
     this.searchController,
+    required this.categories,
   });
 
   @override
@@ -69,14 +78,16 @@ class SearchAndCategories extends StatelessWidget {
             size: 20,
             color: Color(0xFF8A7267),
           ),
-          suffixIcon: GestureDetector(
-            onTap: onMicTap,
-            child: const Icon(
-              Icons.mic,
-              size: 20,
-              color: Color(0xFF8A7267),
-            ),
-          ),
+          suffixIcon: onMicTap == null
+              ? null
+              : GestureDetector(
+                  onTap: onMicTap,
+                  child: const Icon(
+                    Icons.mic,
+                    size: 20,
+                    color: Color(0xFF8A7267),
+                  ),
+                ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -88,30 +99,20 @@ class SearchAndCategories extends StatelessWidget {
   }
 
   Widget _buildCategories() {
-    final categories = [
-      {'name': AppStrings.all, 'count': 51},
-      {'name': AppStrings.completed, 'count': 14},
-      {'name': AppStrings.inProgress, 'count': 1},
-      {'name': AppStrings.unread, 'count': 36},
-      {'name': AppStrings.famousLeelas, 'count': null},
-      {'name': AppStrings.teachings, 'count': null},
-      {'name': AppStrings.mahasamadhi, 'count': null},
-    ];
-
     return SizedBox(
-      width: double.infinity, // Fill width
-      height: 32, // Fixed height for horizontal scrolling
+      width: double.infinity,
+      height: 32,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: categories.length,
         separatorBuilder: (context, index) => const SizedBox(width: 6),
         itemBuilder: (context, index) {
           final category = categories[index];
-          final isActive = selectedCategory == category['name'];
+          final isActive = selectedCategory == category.label;
 
           return _buildCategoryChip(
-            name: category['name'] as String,
-            count: category['count'] as int?,
+            name: category.label,
+            count: category.count,
             isActive: isActive,
           );
         },

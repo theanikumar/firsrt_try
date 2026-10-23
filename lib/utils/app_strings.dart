@@ -354,6 +354,19 @@ class AppStrings {
     return _strings[_currentLanguage]?['read'] ?? _strings['en']!['read']!;
   }
 
+  static String get listen {
+    return _strings[_currentLanguage]?['listen'] ?? _strings['en']!['listen']!;
+  }
+
+  static String get recorded {
+    return _strings[_currentLanguage]?['recorded'] ?? _strings['en']!['recorded']!;
+  }
+
+  static String get notRecorded {
+    return _strings[_currentLanguage]?['notRecorded'] ??
+        _strings['en']!['notRecorded']!;
+  }
+
   // Localized strings database
   // Add other app strings here with language support
   static const Map<String, Map<String, String>> _strings = {
@@ -434,6 +447,9 @@ class AppStrings {
       'readAgain': 'Read Again',
       'resumeReading': 'Resume Reading',
       'read': 'Read',
+      'listen': 'Listen',
+      'recorded': 'Recorded',
+      'notRecorded': 'Not yet recorded',
     },
     // Hindi
     'hi': {
@@ -512,6 +528,9 @@ class AppStrings {
       'readAgain': 'फिर से पढ़ें',
       'resumeReading': 'पढ़ना जारी रखें',
       'read': 'पढ़ें',
+      'listen': 'सुनें',
+      'recorded': 'उपलब्ध',
+      'notRecorded': 'अभी रिकॉर्ड नहीं',
     },
     // Marathi
     'mr': {
@@ -590,6 +609,9 @@ class AppStrings {
       'readAgain': 'पुन्हा वाचा',
       'resumeReading': 'वाचणे सुरू ठेवा',
       'read': 'वाचा',
+      'listen': 'ऐका',
+      'recorded': 'उपलब्ध',
+      'notRecorded': 'अजून रेकॉर्ड नाही',
     },
   };
 }

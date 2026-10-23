@@ -43,7 +43,7 @@ class ExploreSearchBar extends StatelessWidget {
             ),
 
             // 3. Mic icon container
-            _buildMicIconContainer(),
+            if (onMicTap != null) _buildMicIconContainer(),
           ],
         ),
       ),

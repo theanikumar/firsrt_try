@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../widgets/parayan_top_tab_navigation.dart';
-import '../widgets/parayan_main_container.dart';
-import '../widgets/saptah_parayan/saptah_parayan_info_card.dart';
-import '../widgets/saptah_parayan/saptah_parayan_progress_widget.dart';
-import '../widgets/saptah_parayan/daily_saptah_schedule.dart';
-import '../widgets/all_adhyay/all_adhyay_info_card.dart';
-import '../widgets/all_adhyay/search_and_categories.dart';
-import '../widgets/all_adhyay/adhyay_list_widget.dart';
+
 import '../../common/app_header.dart';
 import '../../common/bottom_navigation.dart';
 import '../../common/player_drawer.dart';
-import '../../services/audio_service.dart';
-import '../../data/adhyay_data.dart';
-import '../../data/adhyay_youtube_links.dart';
+import '../../core/auth/auth_provider.dart';
+import '../../core/content/chapters_provider.dart';
+import '../../core/models/content.dart';
+import '../../core/repositories/catalog_repository.dart';
 import '../../routes/app_routes.dart';
+import '../../services/audio_service.dart';
+import '../../utils/app_strings.dart';
+import '../widgets/all_adhyay/adhyay_list_widget.dart';
+import '../widgets/all_adhyay/search_and_categories.dart';
+import '../widgets/parayan_main_container.dart';
+import '../widgets/parayan_top_tab_navigation.dart';
 
 class ParayanScreen extends StatefulWidget {
   const ParayanScreen({super.key});
@@ -24,85 +24,62 @@ class ParayanScreen extends StatefulWidget {
 }
 
 class _ParayanScreenState extends State<ParayanScreen> {
-  int _activeTab = 0; // 0 for Saptah Parayan (default), 1 for All 51 Adhyays
-  double _selectedSpeed = 1.0;
+  int _activeTab = 1; // Default to the live Satcharitra index.
   String _selectedCategory = 'All';
+  String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
   bool _isSaved = false;
 
-  void _handleTabChange(int tab) {
-    setState(() {
-      _activeTab = tab;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<ChaptersProvider>().ensureLoaded();
+      }
     });
-    print('Tab changed to: $tab');
   }
 
-  void _handleSpeedChange(double speed) {
-    setState(() {
-      _selectedSpeed = speed;
-    });
-    print('Speed changed to: $speed');
+  void _handleTabChange(int tab) {
+    setState(() => _activeTab = tab);
   }
 
   void _handleCategoryChange(String category) {
-    setState(() {
-      _selectedCategory = category;
-    });
-    print('Category changed to: $category');
+    setState(() => _selectedCategory = category);
   }
 
   void _handleSearchChange(String query) {
-    print('Search query: $query');
-    // TODO: Implement search filtering
-  }
-
-  void _handleMicTap() {
-    print('Mic tapped for voice search');
-    // TODO: Implement voice search
+    setState(() => _searchQuery = query.trim().toLowerCase());
   }
 
   void _handleNavigation(int index) {
-    // Don't navigate if already on the same screen
     if (index == 0) return;
 
     switch (index) {
-      case 0:
-        // Parayan - already here
-        break;
       case 1:
-        // Explore
         AppRoutes.replaceWithExplore(context);
         break;
       case 2:
-        // Player
         AppRoutes.navigateToPlayer(context);
         break;
       case 3:
-        // Sevak
         AppRoutes.replaceWithSevak(context);
         break;
       case 4:
-        // Settings
         AppRoutes.replaceWithSettings(context);
         break;
     }
   }
 
   void _handlePlayPause() {
-    final audioService = Provider.of<AudioService>(context, listen: false);
-    audioService.togglePlayPause();
-    print('Play/Pause pressed via player drawer');
+    context.read<AudioService>().togglePlayPause();
   }
 
   void _handleSave() {
-    setState(() {
-      _isSaved = !_isSaved;
-    });
-    print('Save pressed: isSaved = $_isSaved');
+    setState(() => _isSaved = !_isSaved);
   }
 
   void _handlePlayerTap() {
-    print('Player drawer tapped - navigate to player page');
     AppRoutes.navigateToPlayer(context);
   }
 
@@ -114,6 +91,8 @@ class _ParayanScreenState extends State<ParayanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+
     return Consumer<AudioService>(
       builder: (context, audioService, child) {
         return Scaffold(
@@ -121,28 +100,25 @@ class _ParayanScreenState extends State<ParayanScreen> {
           body: SafeArea(
             child: Column(
               children: [
-                // 1. App Header (fixed at top)
-                const AppHeader(
-                  streakCount: 7,
-                  profileImageUrl: null,
+                AppHeader(
+                  streakCount: 0,
+                  profileImageUrl:
+                      auth.devotee?.avatarUrl.isNotEmpty == true
+                          ? auth.devotee!.avatarUrl
+                          : null,
+                  onBackPressed: () => AppRoutes.replaceWithHome(context),
                 ),
-
-                // 2. Top Tab Navigation
                 ParayanTopTabNavigation(
                   activeTab: _activeTab,
                   onTabChanged: _handleTabChange,
                 ),
-
-                // 3. Scrollable content based on active tab
                 Expanded(
                   child: SingleChildScrollView(
                     child: _activeTab == 0
                         ? _buildSaptahParayanTab()
-                        : _buildAllAdhyayTab(),
+                        : _buildAllAdhyayTab(auth.language),
                   ),
                 ),
-
-                // 4. Player Drawer (if song is playing)
                 if (audioService.currentSong != null)
                   PlayerDrawer(
                     songName: audioService.currentSong!.title,
@@ -154,10 +130,8 @@ class _ParayanScreenState extends State<ParayanScreen> {
                     onSavePressed: _handleSave,
                     onTap: _handlePlayerTap,
                   ),
-
-                // 5. Bottom Navigation (fixed at bottom)
                 BottomNavigation(
-                  currentIndex: 0, // Parayan tab active (index 0 now)
+                  currentIndex: 0,
                   onTap: _handleNavigation,
                 ),
               ],
@@ -168,90 +142,270 @@ class _ParayanScreenState extends State<ParayanScreen> {
     );
   }
 
-  // Saptah Parayan Tab Content
   Widget _buildSaptahParayanTab() {
     return ParayanMainContainer(
       children: [
-        // 1. Saptah Parayan Info Card
-        SaptahParayanInfoCard(
-          title: 'Shravan Shukla Parayan',
-          dateRange: 'Thu 24 Oct - Wed 30 Oct',
-          daysLeft: '3 days left',
-          selectedSpeed: _selectedSpeed,
-          onSpeedChanged: _handleSpeedChange,
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFFFFF),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF000000).withValues(alpha: 0.05),
+                offset: const Offset(0, 1),
+                blurRadius: 2,
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              const Icon(
+                Icons.calendar_month_outlined,
+                size: 40,
+                color: Color(0xFF9A4100),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Saptah Parayan',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 20,
+                  color: Color(0xFF1D1C18),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Seven-day vow planning, sankalp and daily progress are coming in an upcoming update. '
+                'Every chapter is already available in the All 51 Adhyays tab.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  height: 1.5,
+                  color: Color(0xFF574238),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () => setState(() => _activeTab = 1),
+                child: const Text('Browse all 51 Adhyays'),
+              ),
+            ],
+          ),
         ),
-
-        // 2. Saptah Parayan Progress Widget
-        const SaptahParayanProgressWidget(
-          completedChapters: 18,
-          totalChapters: 51,
-          completedDays: 2,
-          timeListened: '4h 12m listened',
-          timeLeft: 'Est. 5h 45m left',
-        ),
-
-        // 3. Daily Saptah Schedule
-        const DailySaptahSchedule(),
       ],
     );
   }
 
-  // All 51 Adhyays Tab Content
-  Widget _buildAllAdhyayTab() {
+  Widget _buildAllAdhyayTab(String language) {
+    final provider = context.watch<ChaptersProvider>();
+
+    if (provider.isLoading && provider.chapters.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(40),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (provider.error != null && provider.chapters.isEmpty) {
+      return _buildErrorState(provider);
+    }
+
+    final chapters = _filteredChapters(provider.chapters);
+    final recorded = provider.recordedCount;
+    final total = provider.chapters.length;
+
     return Column(
       children: [
-        // 1. All Adhyay Info Card
-        const AllAdhyayInfoCard(
-          currentRead: 4,
-          totalReads: 52,
-          adhyayTitle: 'Adhyay 15 • Cholkar\'s Sugar',
-          verseNumber: 48,
-          timeRemaining: '8 min remaining',
-          currentTrackProgress: 62,
-          overallProgress: 27,
-        ),
-
-        const SizedBox(height: 12),
-
-        // 2. Search and Categories
+        _buildChapterSummary(total, recorded),
+        const SizedBox(height: 8),
         SearchAndCategories(
           selectedCategory: _selectedCategory,
           onCategorySelected: _handleCategoryChange,
           onSearchChanged: _handleSearchChange,
-          onMicTap: _handleMicTap,
           searchController: _searchController,
+          categories: [
+            SearchCategory('All', count: total),
+            SearchCategory(AppStrings.recorded, count: recorded),
+            SearchCategory(
+              AppStrings.notRecorded,
+              count: total - recorded,
+            ),
+          ],
         ),
-
         const SizedBox(height: 8),
-
-        // 3. Adhyay List Widget
-        Builder(
-          builder: (context) {
-            return AdhyayListWidget(
-              onReadTap: (adhyayNumber, videoId) {
-                final audioService = Provider.of<AudioService>(context, listen: false);
-                final adhyayData = AdhyayData.getAdhyay(adhyayNumber);
-
-                final song = Song(
-                  id: 'adhyay_$adhyayNumber',
-                  title: adhyayData.title,
-                  artist: 'Sai Satcharitra',
-                  youtubeUrl: AdhyayYoutubeLinks.getYoutubeUrl(adhyayNumber, 'en'),
-                  videoId: videoId,
-                  duration: Duration(minutes: adhyayData.durationMinutes),
-                  category: 'Adhyay $adhyayNumber',
-                  thumbnailUrl: adhyayData.imageUrl,
-                  isSaptahParayan: false,
-                );
-
-                audioService.playSong(song);
-                print('Playing Adhyay $adhyayNumber');
-                print('Video ID: $videoId');
-              },
-            );
-          },
+        AdhyayListWidget(
+          chapters: chapters,
+          language: language,
+          onListen: (chapter) => _playChapter(chapter, language),
+          emptyMessage: _searchQuery.isNotEmpty
+              ? 'No adhyay matches "$_searchQuery".'
+              : null,
         ),
       ],
     );
+  }
+
+  List<Chapter> _filteredChapters(List<Chapter> chapters) {
+    final recordedLabel = AppStrings.recorded;
+    final notRecordedLabel = AppStrings.notRecorded;
+
+    return chapters.where((chapter) {
+      bool matchesCategory;
+      if (_selectedCategory == recordedLabel) {
+        matchesCategory = chapter.hasAudio;
+      } else if (_selectedCategory == notRecordedLabel) {
+        matchesCategory = !chapter.hasAudio;
+      } else {
+        matchesCategory = true;
+      }
+      if (!matchesCategory) return false;
+
+      if (_searchQuery.isEmpty) return true;
+
+      final haystack = [
+        chapter.number.toString(),
+        chapter.titleEn,
+        chapter.titleHi,
+        chapter.titleMr,
+        chapter.summaryEn,
+        chapter.summaryHi,
+        chapter.summaryMr,
+      ].join(' ').toLowerCase();
+
+      return haystack.contains(_searchQuery);
+    }).toList();
+  }
+
+  Widget _buildChapterSummary(int total, int recorded) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFF8F3EC), Color(0xFFFFDDB8)],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF000000).withValues(alpha: 0.05),
+            offset: const Offset(0, 1),
+            blurRadius: 2,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppStrings.satcharitaIndex,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    letterSpacing: 0.28,
+                    color: Color(0xFF1D1C18),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '$total • $recorded ${AppStrings.recorded}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    color: Color(0xFF574238),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Audio is added chapter by chapter. Unrecorded chapters stay visible so the index is complete.',
+                  style: TextStyle(
+                    fontSize: 11,
+                    height: 1.4,
+                    color: Color(0xFF8A7267),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Icon(
+            Icons.auto_stories,
+            size: 40,
+            color: Color(0xFF9A4100),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(ChaptersProvider provider) {
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        children: [
+          const Icon(
+            Icons.cloud_off,
+            size: 36,
+            color: Color(0xFF9A4100),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            provider.error ?? 'The Satcharitra index could not be loaded.',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 13,
+              height: 1.5,
+              color: Color(0xFF574238),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: provider.refresh,
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _playChapter(Chapter chapter, String language) async {
+    final recording = chapter.audio;
+    if (recording == null || !recording.isPlayable) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Adhyay ${chapter.number} has not been recorded yet.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final song = Song(
+      id: recording.id.toString(),
+      title: chapter.titleFor(language),
+      artist: recording.artistName,
+      youtubeUrl: recording.youtubeUrl.isNotEmpty
+          ? recording.youtubeUrl
+          : 'https://www.youtube.com/watch?v=${recording.youtubeVideoId}',
+      videoId: recording.youtubeVideoId,
+      duration: recording.duration,
+      category: 'Adhyay ${chapter.number}',
+      thumbnailUrl:
+          recording.thumbnailUrl.isNotEmpty ? recording.thumbnailUrl : null,
+      isSaptahParayan: true,
+    );
+
+    await context.read<AudioService>().playSong(song);
+    if (!mounted) return;
+    context.read<CatalogRepository>().reportPlay(recording.id);
+    AppRoutes.navigateToPlayer(context);
   }
 }
