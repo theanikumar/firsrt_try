@@ -26,6 +26,12 @@ class _PlayerMusicProgressState extends State<PlayerMusicProgress> {
     return '$minutes:$seconds';
   }
 
+  double get _progress {
+    final total = widget.totalDuration.inMilliseconds;
+    if (total <= 0) return 0;
+    return (widget.currentPosition.inMilliseconds / total).clamp(0.0, 1.0);
+  }
+
   void _toggleTimeDisplay() {
     setState(() {
       _showTimeRemaining = !_showTimeRemaining;
@@ -83,9 +89,7 @@ class _PlayerMusicProgressState extends State<PlayerMusicProgress> {
     // Calculate how many lines can fit with 4px width and 8px gap
     final int totalLines = ((availableWidth + 8) ~/ (4 + 8)).clamp(20, 60);
 
-    final double progress = widget.currentPosition.inMilliseconds /
-                           widget.totalDuration.inMilliseconds;
-    final int currentLineIndex = (totalLines * progress).round();
+    final int currentLineIndex = (totalLines * _progress).round();
 
     // Different heights for variation
     final List<double> heights = [12, 20, 28, 36, 32, 24, 16, 22, 30, 26];
@@ -120,8 +124,7 @@ class _PlayerMusicProgressState extends State<PlayerMusicProgress> {
 
   // 2. Progress bar widget
   Widget _buildProgressBar() {
-    final double progress = widget.currentPosition.inMilliseconds /
-                           widget.totalDuration.inMilliseconds;
+    final double progress = _progress;
 
     return Container(
       width: double.infinity,
@@ -156,7 +159,7 @@ class _PlayerMusicProgressState extends State<PlayerMusicProgress> {
 
               // Progress indicator disc
               Positioned(
-                left: progressWidth - 8, // Center the disc on progress
+                left: (progressWidth - 8).clamp(0.0, constraints.maxWidth - 16),
                 child: Container(
                   width: 16,
                   height: 16,
@@ -195,6 +198,8 @@ class _PlayerMusicProgressState extends State<PlayerMusicProgress> {
   // 3. Numeric details widget
   Widget _buildNumericDetails() {
     final Duration timeRemaining = widget.totalDuration - widget.currentPosition;
+    final Duration safeRemaining =
+        timeRemaining.isNegative ? Duration.zero : timeRemaining;
 
     return Container(
       width: double.infinity,
@@ -220,7 +225,7 @@ class _PlayerMusicProgressState extends State<PlayerMusicProgress> {
             onTap: _toggleTimeDisplay,
             child: Text(
               _showTimeRemaining
-                  ? '-${_formatDuration(timeRemaining)}'
+                  ? '-${_formatDuration(safeRemaining)}'
                   : _formatDuration(widget.totalDuration),
               textAlign: TextAlign.right,
               style: const TextStyle(

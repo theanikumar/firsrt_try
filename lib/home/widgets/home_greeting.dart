@@ -6,7 +6,7 @@ class HomeGreeting extends StatelessWidget {
 
   const HomeGreeting({
     super.key,
-    this.dayStreak = 3,
+    this.dayStreak = 0,
     this.userName = 'Devotee',
   });
 

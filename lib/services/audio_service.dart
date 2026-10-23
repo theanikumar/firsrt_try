@@ -204,13 +204,13 @@ class AudioService extends ChangeNotifier {
 
   // Rewind 15 seconds
   Future<void> rewind() async {
-    final newPosition = _currentPosition - const Duration(seconds: 15);
+    final newPosition = _currentPosition - const Duration(seconds: 10);
     await seekTo(newPosition < Duration.zero ? Duration.zero : newPosition);
   }
 
   // Forward 15 seconds
   Future<void> forward() async {
-    final newPosition = _currentPosition + const Duration(seconds: 15);
+    final newPosition = _currentPosition + const Duration(seconds: 10);
     final maxDuration = _currentSong?.duration ?? Duration.zero;
     await seekTo(newPosition > maxDuration ? maxDuration : newPosition);
   }

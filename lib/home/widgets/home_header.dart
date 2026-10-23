@@ -8,7 +8,7 @@ class HomeHeader extends StatelessWidget {
 
   const HomeHeader({
     super.key,
-    this.streakCount = 7,
+    this.streakCount = 0,
     this.profileImageUrl,
   });
 

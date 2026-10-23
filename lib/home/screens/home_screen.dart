@@ -210,7 +210,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     // 2. Live Darshan
                     if (live != null && live.hasHls)
-                      LiveDarshan(videoUrl: live.hlsUrl),
+                      LiveDarshan(
+                        videoUrl: live.hlsUrl,
+                        title: live.title,
+                        subtitle: live.subtitle,
+                        isLive: live.isLive,
+                      ),
 
                     // 3. Satcharitra index
                     SatcharitraHomeCard(

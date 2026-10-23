@@ -4,10 +4,16 @@ import 'dart:ui';
 
 class LiveDarshan extends StatefulWidget {
   final String videoUrl;
+  final String title;
+  final String subtitle;
+  final bool isLive;
 
   const LiveDarshan({
     super.key,
     this.videoUrl = 'https://cam3.pc.cdn.bitgravity.com/cam/live/feed006/Saibaba/temple/feed/playlist.m3u8',
+    this.title = 'Live from Shirdi',
+    this.subtitle = 'Kakad Aarti and temple darshan',
+    this.isLive = true,
   });
 
   @override
@@ -235,9 +241,9 @@ class _LiveDarshanState extends State<LiveDarshan> with TickerProviderStateMixin
                             ),
                             const SizedBox(width: 6),
                             // Text
-                            const Text(
-                              'LIVE FROM SHIRDI • समाधि मंदिर',
-                              style: TextStyle(
+                            Text(
+                              widget.isLive ? 'LIVE DARSHAN' : 'DARSHAN',
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 10,
                                 height: 1.4,
@@ -266,18 +272,18 @@ class _LiveDarshanState extends State<LiveDarshan> with TickerProviderStateMixin
                           color: const Color(0xFF32302C).withOpacity(0.6),
                           borderRadius: BorderRadius.circular(9999),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.visibility,
                               color: Color(0xFFF5F0E9),
                               size: 14,
                             ),
-                            SizedBox(width: 3.99),
+                            const SizedBox(width: 3.99),
                             Text(
-                              'Live darshan',
-                              style: TextStyle(
+                              widget.isLive ? 'Live darshan' : 'Darshan',
+                              style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 10,
                                 height: 1.4,
@@ -334,9 +340,9 @@ class _LiveDarshanState extends State<LiveDarshan> with TickerProviderStateMixin
                                 size: 16,
                               ),
                               const SizedBox(width: 4),
-                              const Text(
-                                'KAKAD AARTI LIVE STREAM',
-                                style: TextStyle(
+                              Text(
+                                widget.title.toUpperCase(),
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 12,
                                   height: 1.33,
@@ -348,9 +354,9 @@ class _LiveDarshanState extends State<LiveDarshan> with TickerProviderStateMixin
                             ],
                           ),
                           // 2nd text
-                          const Text(
-                            'मंगल स्नान व प्रभात आरती दर्शन',
-                            style: TextStyle(
+                          Text(
+                            widget.subtitle,
+                            style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
                               height: 1.5,
@@ -361,7 +367,7 @@ class _LiveDarshanState extends State<LiveDarshan> with TickerProviderStateMixin
                           ),
                           // 3rd text
                           const Text(
-                            'Direct audio & visual stream • साईं की महिमा',
+                            'Direct audio & visual stream',
                             style: TextStyle(
                               fontWeight: FontWeight.w400,
                               fontSize: 12,

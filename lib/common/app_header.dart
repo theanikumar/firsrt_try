@@ -9,7 +9,7 @@ class AppHeader extends StatelessWidget {
 
   const AppHeader({
     super.key,
-    this.streakCount = 7,
+    this.streakCount = 0,
     this.profileImageUrl,
     this.onBackPressed,
   });
