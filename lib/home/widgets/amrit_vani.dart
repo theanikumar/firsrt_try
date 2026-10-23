@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
 
 class AmritVani extends StatelessWidget {
-  const AmritVani({super.key});
+  final String? quote;
+  final String? translation;
+  final String? reference;
+
+  const AmritVani({
+    super.key,
+    this.quote,
+    this.translation,
+    this.reference,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -126,10 +135,10 @@ class AmritVani extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.only(bottom: 0.63),
-      child: const Text(
-        '"श्रद्धा और सबुरी रखो, तुम्हारे सब कष्ट दूर होंगे ।"',
+      child: Text(
+        quote ?? '"श्रद्धा और सबुरी रखो, तुम्हारे सब कष्ट दूर होंगे ।"',
         textAlign: TextAlign.left,
-        style: TextStyle(
+        style: const TextStyle(
           fontWeight: FontWeight.w600,
           fontSize: 22,
           height: 1.627, // Line height 35.8 / font size 22 = 1.627
@@ -142,13 +151,16 @@ class AmritVani extends StatelessWidget {
   }
 
   Widget _buildEnglishVani() {
+    if (translation == null || translation!.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.only(top: 1.1),
       child: Text(
-        '"Have unwavering faith and patient endurance; every sincere prayer offered is received at the feet of the Lord."',
+        '"$translation"',
         textAlign: TextAlign.left,
-        style: TextStyle(
+        style: const TextStyle(
           fontWeight: FontWeight.w400,
           fontSize: 14,
           height: 1.571, // Line height 22 / font size 14 = 1.571
@@ -171,10 +183,10 @@ class AmritVani extends StatelessWidget {
         children: [
           // 1. Left - Chapter reference
           Expanded(
-            child: const Text(
-              '-Shri Sai Satcharitra, Chapter 19',
+            child: Text(
+              reference ?? '-Shri Sai Satcharitra, Chapter 19',
               textAlign: TextAlign.left,
-              style: TextStyle(
+              style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 10,
                 height: 1.4, // Line height 14 / font size 10 = 1.4

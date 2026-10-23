@@ -276,7 +276,7 @@ class _LiveDarshanState extends State<LiveDarshan> with TickerProviderStateMixin
                             ),
                             SizedBox(width: 3.99),
                             Text(
-                              '48.2k watching',
+                              'Live darshan',
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 10,

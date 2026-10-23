@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 
 class PlayerMusicProgress extends StatefulWidget {
   final Duration currentPosition;

@@ -152,7 +152,6 @@ class ParayanProgress extends StatelessWidget {
           final day = index + 1;
           final isPassed = day < currentDay;
           final isActive = day == currentDay;
-          final isFuture = day > currentDay;
           final showLine = day < totalDays;
 
           return Expanded(

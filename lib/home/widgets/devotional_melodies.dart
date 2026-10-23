@@ -5,10 +5,12 @@ import '../../data/songs_data.dart';
 
 class DevotionalMelodies extends StatelessWidget {
   final Function(String songName, String details)? onPlaySong;
+  final List<Song>? songs;
 
   const DevotionalMelodies({
     super.key,
     this.onPlaySong,
+    this.songs,
   });
 
   @override
@@ -94,7 +96,27 @@ class DevotionalMelodies extends StatelessWidget {
   }
 
   Widget _buildMusicContainer(BuildContext context) {
-    final songs = SongsData.devotionalMelodies;
+    final songs = this.songs ?? SongsData.devotionalMelodies;
+
+    if (songs.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFFFF),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Text(
+          'New melodies are being consecrated. Please check back soon.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 13,
+            height: 1.5,
+            color: Color(0xFF8A7267),
+          ),
+        ),
+      );
+    }
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -107,6 +129,7 @@ class DevotionalMelodies extends StatelessWidget {
           child: _buildMusicCard(
             context: context,
             song: song,
+            playlist: songs,
             onPlaySong: onPlaySong,
           ),
         );
@@ -117,6 +140,7 @@ class DevotionalMelodies extends StatelessWidget {
   Widget _buildMusicCard({
     required BuildContext context,
     required Song song,
+    required List<Song> playlist,
     required Function(String songName, String details)? onPlaySong,
   }) {
     // Format duration
@@ -155,11 +179,24 @@ class DevotionalMelodies extends StatelessWidget {
                     color: const Color(0xFFFFDBCB),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
-                    Icons.music_note,
-                    color: Color(0xFF9A4100),
-                    size: 28,
-                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: song.thumbnailUrl != null &&
+                          song.thumbnailUrl!.isNotEmpty
+                      ? Image.network(
+                          song.thumbnailUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(
+                            Icons.music_note,
+                            color: Color(0xFF9A4100),
+                            size: 28,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.music_note,
+                          color: Color(0xFF9A4100),
+                          size: 28,
+                        ),
                 ),
                 const SizedBox(width: 8),
                 // Music Details
@@ -221,16 +258,24 @@ class DevotionalMelodies extends StatelessWidget {
           // Play button
           GestureDetector(
             onTap: () async {
+              if (song.videoId.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('This melody is not available yet.'),
+                  ),
+                );
+                return;
+              }
+
               // Handle play action - trigger player drawer and audio service
               final audioService = Provider.of<AudioService>(context, listen: false);
 
               // Start playing the song
-              await audioService.playSong(song, playlist: SongsData.devotionalMelodies);
+              await audioService.playSong(song, playlist: playlist);
 
               if (onPlaySong != null) {
                 onPlaySong(song.title, '${song.artist} • ${song.category}');
               }
-              print('Playing ${song.title}');
             },
             child: Container(
               width: 40,

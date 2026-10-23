@@ -162,7 +162,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           onDropPressed: _handleDropPressed,
                           onSavePressed: _handleSavePressed,
                           isSaved: _isSaved,
-                          qualityText: 'Ultra HD Devotional • 320 kbps',
+                          qualityText: 'Streaming from YouTube',
                         ),
 
                         // Player Disc Image
@@ -178,7 +178,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           songName: currentSong.title,
                           singerOrAdhyayTitle: currentSong.artist,
                           readerDetails: currentSong.isSaptahParayan
-                              ? 'Read by Shri Amitabh Bachchan'
+                              ? 'Narrated by ${currentSong.artist}'
                               : null,
                         ),
 

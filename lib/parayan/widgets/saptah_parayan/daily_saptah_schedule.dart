@@ -523,41 +523,24 @@ class DailySaptahSchedule extends StatelessWidget {
 
                         const SizedBox(width: 12),
 
-                        // 2. Download widget
-                        GestureDetector(
-                          onTap: () {
-                            // TODO: Handle download
-                            print('Download tapped');
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE6E2DB),
-                              borderRadius: BorderRadius.circular(9999),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.download,
-                                  color: Color(0xFF1D1C18),
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  AppStrings.offline,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600, // semibold
-                                    fontSize: 10,
-                                    height: 14 / 10, // line height 14
-                                    letterSpacing: 0.5,
-                                    color: Color(0xFF1D1C18),
-                                  ),
-                                ),
-                              ],
+                        // 2. Offline status (downloads are not part of v1)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE6E2DB),
+                            borderRadius: BorderRadius.circular(9999),
+                          ),
+                          child: Text(
+                            AppStrings.offline,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 10,
+                              height: 14 / 10,
+                              letterSpacing: 0.5,
+                              color: Color(0xFF1D1C18),
                             ),
                           ),
                         ),

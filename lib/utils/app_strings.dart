@@ -2,8 +2,13 @@ class AppStrings {
   // Language selection
   static String _currentLanguage = 'en';
 
+  // v1 ships a full UI only in these three languages. The other choices are
+  // saved on the devotee profile, but the interface falls back to English.
+  static const _uiReadyLanguages = {'en', 'hi', 'mr'};
+
   static void setLanguage(String languageCode) {
-    _currentLanguage = languageCode;
+    _currentLanguage =
+        _uiReadyLanguages.contains(languageCode) ? languageCode : 'en';
   }
 
   static String get currentLanguage => _currentLanguage;
@@ -387,7 +392,7 @@ class AppStrings {
       'playingNow': 'Playing Now',
       'elapsed': 'elapsed',
       'remaining': 'remaining',
-      'offline': 'Offline (48MB)',
+      'offline': 'Offline unavailable',
       'day4': 'DAY 4',
       'day4Duration': '56 min',
       'day4Adhyays': 'Adhyays 22 to 28',
@@ -465,7 +470,7 @@ class AppStrings {
       'playingNow': 'अभी चल रहा है',
       'elapsed': 'बीत गया',
       'remaining': 'शेष',
-      'offline': 'ऑफ़लाइन (48MB)',
+      'offline': 'ऑफ़लाइन उपलब्ध नहीं',
       'day4': 'दिवस 4',
       'day4Duration': '56 मिनट',
       'day4Adhyays': 'अध्याय 22 से 28',
@@ -543,7 +548,7 @@ class AppStrings {
       'playingNow': 'आता चालू आहे',
       'elapsed': 'गेले',
       'remaining': 'उरलेले',
-      'offline': 'ऑफलाइन (48MB)',
+      'offline': 'ऑफलाइन उपलब्ध नाही',
       'day4': 'दिवस 4',
       'day4Duration': '56 मिनिटे',
       'day4Adhyays': 'अध्याय 22 ते 28',

@@ -10,9 +10,11 @@ import '../widgets/quick_actions.dart';
 import '../widgets/devotional_melodies.dart';
 import '../../common/bottom_navigation.dart';
 import '../../common/player_drawer.dart';
+import '../../core/auth/auth_provider.dart';
+import '../../core/bootstrap/bootstrap_provider.dart';
+import '../../core/models/offering.dart';
 import '../../routes/app_routes.dart';
 import '../../services/audio_service.dart';
-import '../../data/songs_data.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -73,14 +75,94 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Method to start playing a song (can be called from child widgets)
   void _playSong(String songName, String details) {
-    print('Now playing: $songName - $details');
-
-    // Navigate to player screen
+    // The audio service is already playing; open the full player.
     AppRoutes.navigateToPlayer(context);
+  }
+
+  Song _songFromOffering(Offering offering) {
+    final videoId = offering.youtubeVideoId;
+    final url = offering.youtubeUrl.isNotEmpty
+        ? offering.youtubeUrl
+        : 'https://www.youtube.com/watch?v=$videoId';
+    return Song(
+      id: offering.id.toString(),
+      title: offering.title,
+      artist: offering.artistName,
+      youtubeUrl: url,
+      videoId: videoId,
+      duration: offering.duration,
+      category: _categoryLabel(offering.category),
+      thumbnailUrl:
+          offering.thumbnailUrl.isNotEmpty ? offering.thumbnailUrl : null,
+      isSaptahParayan: offering.offeringType == 'parayan',
+    );
+  }
+
+  String _categoryLabel(String category) {
+    switch (category) {
+      case 'kakad_aarti':
+        return 'Kakad Aarti';
+      case 'dhoop_aarti':
+        return 'Dhoop Aarti';
+      case 'shej_aarti':
+        return 'Shej Aarti';
+      case 'bhajan':
+        return 'Bhajan';
+      case 'dhun':
+        return 'Dhun';
+      case 'parayan':
+        return 'Parayan';
+      default:
+        return category.isEmpty
+            ? 'Devotional'
+            : category.replaceAll('_', ' ');
+    }
+  }
+
+  Widget _buildRetryCard(BootstrapProvider bootstrap) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF3E0),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE8C9A0)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.cloud_off, color: Color(0xFF9A4100), size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Live content could not be refreshed. ${bootstrap.error ?? ''}',
+              style: const TextStyle(
+                fontSize: 12,
+                height: 1.4,
+                color: Color(0xFF574238),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: bootstrap.isLoading ? null : bootstrap.refresh,
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final bootstrap = context.watch<BootstrapProvider>();
+    final language = auth.language;
+    final quote = bootstrap.quote;
+    final live = bootstrap.primaryLiveStream;
+    final melodies = bootstrap.melodies
+        .where((offering) => offering.isPlayable)
+        .map(_songFromOffering)
+        .toList();
+
     return Consumer<AudioService>(
       builder: (context, audioService, child) {
         return Scaffold(
@@ -89,9 +171,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   children: [
                     // Header (fixed at top)
-                    const HomeHeader(
+                    HomeHeader(
                       streakCount: 7,
-                      profileImageUrl: null, // Will use default profile icon
+                      profileImageUrl: auth.devotee?.avatarUrl.isNotEmpty == true
+                          ? auth.devotee!.avatarUrl
+                          : null,
                     ),
 
             // Scrollable content
@@ -99,16 +183,18 @@ class _HomeScreenState extends State<HomeScreen> {
               child: SingleChildScrollView(
                 child: HomeMainContainer(
                   children: [
+                    if (bootstrap.error != null)
+                      _buildRetryCard(bootstrap),
+
                     // 1. Greeting
                     HomeGreeting(
                       dayStreak: 3,
-                      userName: 'Devotee',
+                      userName: auth.displayName,
                     ),
 
                     // 2. Live Darshan
-                    LiveDarshan(
-                      videoUrl: 'https://www.youtube.com/watch?v=04fkCLDjNec',
-                    ),
+                    if (live != null && live.hasHls)
+                      LiveDarshan(videoUrl: live.hlsUrl),
 
                     // 3. Parayan Progress
                     ParayanProgress(
@@ -116,24 +202,25 @@ class _HomeScreenState extends State<HomeScreen> {
                       totalDays: 7,
                       completedDays: 2,
                       progressPercentage: 43.0,
-                      onResumePressed: () async {
-                        // Get audio service and play Satcharitra
-                        final audioService = Provider.of<AudioService>(context, listen: false);
-                        final satcharitra = SongsData.saptahParayan.first;
-                        await audioService.playSong(satcharitra);
-
-                        _playSong(satcharitra.title, satcharitra.artist);
+                      onResumePressed: () {
+                        AppRoutes.navigateToParayan(context);
                       },
                     ),
 
                     // 4. Amrit Vani (Daily Quote)
-                    AmritVani(),
+                    AmritVani(
+                      quote: quote?.quoteFor(language),
+                      translation:
+                          language == 'en' ? null : quote?.quoteEn,
+                      reference: quote?.reference,
+                    ),
 
                     // 5. Quick Actions (Sacred Offerings)
                     QuickActions(),
 
                     // 6. Devotional Melodies
                     DevotionalMelodies(
+                      songs: melodies,
                       onPlaySong: _playSong,
                     ),
                   ],

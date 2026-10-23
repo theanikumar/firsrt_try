@@ -1,61 +1,60 @@
 import 'package:flutter/material.dart';
-import 'language_option_box.dart';
+
 import '../../../utils/app_strings.dart';
+import 'language_option_box.dart';
 
-class BottomLanguageSelector extends StatefulWidget {
-  const BottomLanguageSelector({super.key});
+class BottomLanguageSelector extends StatelessWidget {
+  const BottomLanguageSelector({
+    super.key,
+    required this.selectedLanguage,
+    required this.onSelected,
+  });
 
-  @override
-  State<BottomLanguageSelector> createState() => _BottomLanguageSelectorState();
-}
+  final String selectedLanguage;
+  final ValueChanged<String> onSelected;
 
-class _BottomLanguageSelectorState extends State<BottomLanguageSelector> {
-  String selectedLanguage = 'en';
-
-  final List<Map<String, String>> languages = [
+  static const List<Map<String, String>> _languages = [
     {
       'code': 'hi',
       'nameLocal': 'हिन्दी',
       'nameEnglish': 'Hindi',
-      'audioBadge': 'पूर्ण पाठ',
+      'badge': 'पूर्ण पाठ',
     },
     {
       'code': 'mr',
       'nameLocal': 'मराठी',
       'nameEnglish': 'Marathi',
-      'audioBadge': 'पूर्ण पाठ',
+      'badge': 'पूर्ण पाठ',
     },
     {
       'code': 'te',
       'nameLocal': 'తెలుగు',
       'nameEnglish': 'Telugu',
-      'audioBadge': 'పూర్తి పాఠం',
+      'badge': 'Coming soon',
     },
     {
       'code': 'en',
       'nameLocal': 'English',
       'nameEnglish': 'English',
-      'audioBadge': 'Audio',
+      'badge': 'Full audio',
     },
     {
       'code': 'gu',
       'nameLocal': 'ગુજરાતી',
       'nameEnglish': 'Gujarati',
-      'audioBadge': 'સંપૂર્ણ પાઠ',
+      'badge': 'Coming soon',
     },
     {
       'code': 'or',
       'nameLocal': 'ଓଡ଼ିଆ',
       'nameEnglish': 'Odia',
-      'audioBadge': 'ସମ୍ପୂର୍ଣ୍ଣ ପାଠ',
+      'badge': 'Coming soon',
     },
   ];
 
-  void _selectLanguage(String languageCode) {
-    setState(() {
-      selectedLanguage = languageCode;
-      AppStrings.setLanguage(languageCode);
-    });
+  void _select(String code) {
+    AppStrings.setLanguage(code);
+    onSelected(code);
   }
 
   @override
@@ -71,15 +70,15 @@ class _BottomLanguageSelectorState extends State<BottomLanguageSelector> {
           mainAxisSpacing: 10,
           childAspectRatio: 1.8,
         ),
-        itemCount: languages.length,
+        itemCount: _languages.length,
         itemBuilder: (context, index) {
-          final language = languages[index];
+          final language = _languages[index];
           return LanguageOptionBox(
             languageNameLocal: language['nameLocal']!,
             languageNameEnglish: language['nameEnglish']!,
-            audioBadgeText: language['audioBadge']!,
+            audioBadgeText: language['badge']!,
             isSelected: selectedLanguage == language['code'],
-            onTap: () => _selectLanguage(language['code']!),
+            onTap: () => _select(language['code']!),
           );
         },
       ),

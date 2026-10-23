@@ -46,21 +46,21 @@ class _SplashLoadingState extends State<SplashLoading>
 
   void _startLoadingSequence() async {
     // Stage 1: 0% to 30%
-    await _animateProgress(0.0, 0.30, const Duration(milliseconds: 1000));
-    await Future.delayed(const Duration(seconds: 2));
+    await _animateProgress(0.0, 0.30, const Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 100));
 
     // Stage 2: 30% to 60%
     setState(() => _currentStage = 1);
-    await _animateProgress(0.30, 0.60, const Duration(milliseconds: 1000));
-    await Future.delayed(const Duration(seconds: 2));
+    await _animateProgress(0.30, 0.60, const Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 100));
 
     // Stage 3: 60% to 95%
     setState(() => _currentStage = 2);
-    await _animateProgress(0.60, 0.95, const Duration(milliseconds: 1000));
-    await Future.delayed(const Duration(seconds: 2));
+    await _animateProgress(0.60, 0.95, const Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 100));
 
     // Final: 95% to 100%
-    await _animateProgress(0.95, 1.0, const Duration(milliseconds: 500));
+    await _animateProgress(0.95, 1.0, const Duration(milliseconds: 200));
 
     // Notify completion
     if (widget.onLoadingComplete != null) {

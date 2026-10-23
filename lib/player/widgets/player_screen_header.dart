@@ -11,7 +11,7 @@ class PlayerScreenHeader extends StatelessWidget {
     required this.onDropPressed,
     required this.onSavePressed,
     this.isSaved = false,
-    this.qualityText = 'Ultra HD Devotional • 320 kbps',
+    this.qualityText = 'Streaming from YouTube',
   });
 
   @override

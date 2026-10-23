@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import '../widgets/login_header.dart';
 import '../widgets/login_top.dart';
-import '../widgets/login_buttons.dart';
+import '../widgets/phone_otp_card.dart';
 import '../widgets/login_info_card.dart';
 import '../widgets/login_footer.dart';
-import '../../routes/app_routes.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -34,25 +33,13 @@ class LoginScreen extends StatelessWidget {
                       // Top section (image, title, welcome)
                       const LoginTop(),
 
-                      // Middle section (buttons and info card)
+                      // Middle section (phone OTP and info card)
                       Column(
                         children: [
-                          // Login buttons
-                          LoginButtons(
-                            onGoogleLogin: () {
-                              print('Google login tapped');
-                              // Navigate to onboarding after login
-                              Navigator.of(context).pushReplacementNamed(
-                                AppRoutes.onboardingFirst,
-                              );
-                            },
-                            onFacebookLogin: () {
-                              print('Facebook login tapped');
-                              // Navigate to onboarding after login
-                              Navigator.of(context).pushReplacementNamed(
-                                AppRoutes.onboardingFirst,
-                              );
-                            },
+                          // Phone + OTP sign-in
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            child: PhoneOtpCard(),
                           ),
 
                           // Info card
