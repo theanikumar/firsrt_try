@@ -119,9 +119,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _buildProfileCard(auth),
                     const SizedBox(height: 20),
                     _buildSectionTitle(
-                      favorites.count == 0
+                      favorites.items.isEmpty
                           ? 'Saved offerings'
-                          : 'Saved offerings (${favorites.count})',
+                          : 'Saved offerings (${favorites.items.length})',
                     ),
                     const SizedBox(height: 8),
                     _buildSavedCard(favorites),
