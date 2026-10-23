@@ -6,10 +6,12 @@ import 'core/auth/auth_provider.dart';
 import 'core/bootstrap/bootstrap_provider.dart';
 import 'core/catalog/catalog_provider.dart';
 import 'core/content/chapters_provider.dart';
+import 'core/favorites/favorites_provider.dart';
 import 'core/network/api_client.dart';
 import 'core/repositories/auth_repository.dart';
 import 'core/repositories/catalog_repository.dart';
 import 'core/repositories/content_repository.dart';
+import 'core/repositories/favorites_repository.dart';
 import 'core/storage/token_store.dart';
 import 'core/team/team_provider.dart';
 import 'routes/app_routes.dart';
@@ -23,6 +25,7 @@ void main() {
   final authRepository = AuthRepository(api: apiClient);
   final contentRepository = ContentRepository(api: apiClient);
   final catalogRepository = CatalogRepository(api: apiClient);
+  final favoritesRepository = FavoritesRepository(api: apiClient);
 
   runApp(
     MultiProvider(
@@ -31,6 +34,7 @@ void main() {
         Provider<AuthRepository>.value(value: authRepository),
         Provider<ContentRepository>.value(value: contentRepository),
         Provider<CatalogRepository>.value(value: catalogRepository),
+        Provider<FavoritesRepository>.value(value: favoritesRepository),
         ChangeNotifierProvider<AudioService>(
           create: (_) => AudioService(),
         ),
@@ -58,6 +62,9 @@ void main() {
         ),
         ChangeNotifierProvider<TeamProvider>(
           create: (_) => TeamProvider(content: contentRepository),
+        ),
+        ChangeNotifierProvider<FavoritesProvider>(
+          create: (_) => FavoritesProvider(favorites: favoritesRepository),
         ),
       ],
       child: const SaiVaniApp(),

@@ -6,6 +6,7 @@ import '../../common/bottom_navigation.dart';
 import '../../common/player_drawer.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/content/chapters_provider.dart';
+import '../../core/favorites/favorites_provider.dart';
 import '../../core/models/content.dart';
 import '../../core/repositories/catalog_repository.dart';
 import '../../routes/app_routes.dart';
@@ -28,7 +29,6 @@ class _ParayanScreenState extends State<ParayanScreen> {
   String _selectedCategory = 'All';
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
-  bool _isSaved = false;
 
   @override
   void initState() {
@@ -36,6 +36,7 @@ class _ParayanScreenState extends State<ParayanScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<ChaptersProvider>().ensureLoaded();
+        context.read<FavoritesProvider>().ensureLoaded();
       }
     });
   }
@@ -75,8 +76,18 @@ class _ParayanScreenState extends State<ParayanScreen> {
     context.read<AudioService>().togglePlayPause();
   }
 
-  void _handleSave() {
-    setState(() => _isSaved = !_isSaved);
+  Future<void> _handleSave() async {
+    final song = context.read<AudioService>().currentSong;
+    final id = int.tryParse(song?.id ?? '');
+    if (id == null) return;
+    try {
+      await context.read<FavoritesProvider>().toggle(id);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Saved offerings could not be updated.')),
+      );
+    }
   }
 
   void _handlePlayerTap() {
@@ -92,9 +103,11 @@ class _ParayanScreenState extends State<ParayanScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final favorites = context.watch<FavoritesProvider>();
 
     return Consumer<AudioService>(
       builder: (context, audioService, child) {
+        final currentOfferingId = int.tryParse(audioService.currentSong?.id ?? '');
         return Scaffold(
           backgroundColor: const Color(0xFFF8F3EC),
           body: SafeArea(
@@ -125,7 +138,7 @@ class _ParayanScreenState extends State<ParayanScreen> {
                     songDetails: audioService.currentSong!.artist,
                     thumbnailUrl: audioService.currentSong!.thumbnailUrl,
                     isPlaying: audioService.isPlaying,
-                    isSaved: _isSaved,
+                    isSaved: favorites.isFavorite(currentOfferingId),
                     onPlayPausePressed: _handlePlayPause,
                     onSavePressed: _handleSave,
                     onTap: _handlePlayerTap,

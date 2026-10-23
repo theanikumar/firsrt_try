@@ -13,6 +13,7 @@ import '../../common/player_drawer.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/bootstrap/bootstrap_provider.dart';
 import '../../core/content/chapters_provider.dart';
+import '../../core/favorites/favorites_provider.dart';
 import '../../core/models/offering.dart';
 import '../../core/repositories/catalog_repository.dart';
 import '../../routes/app_routes.dart';
@@ -26,15 +27,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Player state
-  bool _isSaved = false;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<ChaptersProvider>().ensureLoaded();
+        context.read<FavoritesProvider>().ensureLoaded();
       }
     });
   }
@@ -69,10 +68,18 @@ class _HomeScreenState extends State<HomeScreen> {
     audioService.togglePlayPause();
   }
 
-  void _handleSave() {
-    setState(() {
-      _isSaved = !_isSaved;
-    });
+  Future<void> _handleSave() async {
+    final song = context.read<AudioService>().currentSong;
+    final id = int.tryParse(song?.id ?? '');
+    if (id == null) return;
+    try {
+      await context.read<FavoritesProvider>().toggle(id);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Saved offerings could not be updated.')),
+      );
+    }
   }
 
   void _handlePlayerTap() {
@@ -162,6 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final auth = context.watch<AuthProvider>();
     final bootstrap = context.watch<BootstrapProvider>();
     final chapters = context.watch<ChaptersProvider>();
+    final favorites = context.watch<FavoritesProvider>();
     final language = auth.language;
     final quote = bootstrap.quote;
     final live = bootstrap.primaryLiveStream;
@@ -172,6 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Consumer<AudioService>(
       builder: (context, audioService, child) {
+        final currentOfferingId = int.tryParse(audioService.currentSong?.id ?? '');
         return Scaffold(
           backgroundColor: const Color(0xFFF8F3EC),
           body: SafeArea(
@@ -260,7 +269,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           songDetails: '${audioService.currentSong!.artist} • ${audioService.currentSong!.category}',
                           thumbnailUrl: null, // Will use default music icon
                           isPlaying: audioService.isPlaying,
-                          isSaved: _isSaved,
+                          isSaved: favorites.isFavorite(currentOfferingId),
                           onPlayPausePressed: _handlePlayPause,
                           onSavePressed: _handleSave,
                           onTap: _handlePlayerTap,

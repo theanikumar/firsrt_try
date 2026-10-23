@@ -41,7 +41,7 @@ class LoginInfoCard extends StatelessWidget {
                 children: [
                   // i. Top - Title
                   const Text(
-                    '100% Free, Sacred & Private Seva',
+                    'Free, Sacred & Private Seva',
                     style: TextStyle(
                       fontWeight: FontWeight.w600, // semibold
                       fontSize: 12,
@@ -55,7 +55,7 @@ class LoginInfoCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.only(top: 2),
                     child: const Text(
-                      'Your sacred devotion confidential. We do not track, market, or commercialize your personal prayers and darshan activity',
+                      'Your phone number is used only to sign in. Anonymous play counts help the seva team decide which recordings to add next.',
                       style: TextStyle(
                         fontWeight: FontWeight.w400, // regular
                         fontSize: 12,

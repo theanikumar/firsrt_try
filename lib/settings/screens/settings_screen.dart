@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -5,8 +7,12 @@ import '../../common/app_header.dart';
 import '../../common/bottom_navigation.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/bootstrap/bootstrap_provider.dart';
+import '../../core/favorites/favorites_provider.dart';
 import '../../core/models/bootstrap.dart';
+import '../../core/models/offering.dart';
+import '../../core/repositories/catalog_repository.dart';
 import '../../routes/app_routes.dart';
+import '../../services/audio_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -17,6 +23,16 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _updatingLanguage = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<FavoritesProvider>().ensureLoaded();
+      }
+    });
+  }
 
   Future<void> _selectLanguage(LanguageOption option) async {
     if (_updatingLanguage) return;
@@ -65,6 +81,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
     if (confirmed != true || !mounted) return;
 
+    context.read<FavoritesProvider>().clear();
     await context.read<AuthProvider>().logout();
     if (!mounted) return;
     Navigator.of(context).pushNamedAndRemoveUntil(
@@ -77,6 +94,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final bootstrap = context.watch<BootstrapProvider>();
+    final favorites = context.watch<FavoritesProvider>();
     final devotee = auth.devotee;
     final languages = bootstrap.languages;
 
@@ -99,6 +117,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildProfileCard(auth),
+                    const SizedBox(height: 20),
+                    _buildSectionTitle(
+                      favorites.count == 0
+                          ? 'Saved offerings'
+                          : 'Saved offerings (${favorites.count})',
+                    ),
+                    const SizedBox(height: 8),
+                    _buildSavedCard(favorites),
                     const SizedBox(height: 20),
                     _buildSectionTitle('Language'),
                     const SizedBox(height: 8),
@@ -231,6 +257,121 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildSavedCard(FavoritesProvider favorites) {
+    if (favorites.isLoading && favorites.items.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(24),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (favorites.items.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFFFF),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              offset: const Offset(0, 1),
+              blurRadius: 2,
+            ),
+          ],
+        ),
+        child: const Text(
+          'No saved offerings yet. Tap the heart on any recording to keep it here.',
+          style: TextStyle(
+            fontSize: 12,
+            height: 1.5,
+            color: Color(0xFF574238),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFFFF),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            offset: const Offset(0, 1),
+            blurRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          for (var index = 0; index < favorites.items.length; index++) ...[
+            if (index > 0) const Divider(height: 1),
+            _buildSavedRow(favorites.items[index]),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSavedRow(Offering offering) {
+    return ListTile(
+      leading: const CircleAvatar(
+        backgroundColor: Color(0xFFFFDBCB),
+        child: Icon(Icons.music_note, color: Color(0xFF783100)),
+      ),
+      title: Text(
+        offering.title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(
+        offering.artistName.isEmpty ? 'Saved offering' : offering.artistName,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: IconButton(
+        icon: const Icon(Icons.favorite, color: Color(0xFF9A4100)),
+        tooltip: 'Remove from saved',
+        onPressed: () async {
+          try {
+            await context
+                .read<FavoritesProvider>()
+                .toggle(offering.id, offering: offering);
+          } catch (_) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Saved offerings could not be updated.'),
+              ),
+            );
+          }
+        },
+      ),
+      onTap: offering.isPlayable ? () => _playOffering(offering) : null,
+    );
+  }
+
+  Future<void> _playOffering(Offering offering) async {
+    final song = Song(
+      id: offering.id.toString(),
+      title: offering.title,
+      artist: offering.artistName,
+      youtubeUrl: offering.youtubeUrl,
+      videoId: offering.youtubeVideoId,
+      duration: offering.duration,
+      category: offering.category,
+      thumbnailUrl: offering.thumbnailUrl,
+      isSaptahParayan: offering.offeringType == 'parayan',
+    );
+
+    await context.read<AudioService>().playSong(song);
+    if (!mounted) return;
+    unawaited(context.read<CatalogRepository>().reportPlay(offering.id));
+    AppRoutes.navigateToPlayer(context);
   }
 
   Widget _buildSectionTitle(String title) {

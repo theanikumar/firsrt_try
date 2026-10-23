@@ -9,6 +9,7 @@ import '../widgets/player_song_details.dart';
 import '../widgets/player_music_progress.dart';
 import '../widgets/player_controls.dart';
 import '../../services/audio_service.dart';
+import '../../core/favorites/favorites_provider.dart';
 import '../../routes/app_routes.dart';
 
 class PlayerScreen extends StatefulWidget {
@@ -19,8 +20,6 @@ class PlayerScreen extends StatefulWidget {
 }
 
 class _PlayerScreenState extends State<PlayerScreen> {
-  bool _isSaved = false;
-
   void _handleNavigation(int index) {
     // Don't navigate if already on the same screen
     if (index == 2) return;
@@ -52,10 +51,18 @@ class _PlayerScreenState extends State<PlayerScreen> {
     Navigator.pop(context);
   }
 
-  void _handleSavePressed() {
-    setState(() {
-      _isSaved = !_isSaved;
-    });
+  Future<void> _handleSavePressed() async {
+    final song = context.read<AudioService>().currentSong;
+    final id = int.tryParse(song?.id ?? '');
+    if (id == null) return;
+    try {
+      await context.read<FavoritesProvider>().toggle(id);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Saved offerings could not be updated.')),
+      );
+    }
   }
 
   void _handlePlayPause() {
@@ -85,11 +92,14 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final favorites = context.watch<FavoritesProvider>();
+
     return Consumer<AudioService>(
       builder: (context, audioService, child) {
         final currentSong = audioService.currentSong;
         final isPlaying = audioService.isPlaying;
         final currentPosition = audioService.currentPosition;
+        final currentOfferingId = int.tryParse(currentSong?.id ?? '');
 
         // If no song is playing, show placeholder
         if (currentSong == null) {
@@ -154,7 +164,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         PlayerScreenHeader(
                           onDropPressed: _handleDropPressed,
                           onSavePressed: _handleSavePressed,
-                          isSaved: _isSaved,
+                          isSaved: favorites.isFavorite(currentOfferingId),
                           qualityText: 'Streaming from YouTube',
                         ),
 

@@ -6,6 +6,7 @@ import '../../common/bottom_navigation.dart';
 import '../../common/player_drawer.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/catalog/catalog_provider.dart';
+import '../../core/favorites/favorites_provider.dart';
 import '../../core/models/content.dart';
 import '../../core/models/offering.dart';
 import '../../core/repositories/catalog_repository.dart';
@@ -24,14 +25,13 @@ class ExploreScreen extends StatefulWidget {
 }
 
 class _ExploreScreenState extends State<ExploreScreen> {
-  bool _isSaved = false;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         context.read<CatalogProvider>().ensureLoaded();
+        context.read<FavoritesProvider>().ensureLoaded();
       }
     });
   }
@@ -59,8 +59,18 @@ class _ExploreScreenState extends State<ExploreScreen> {
     context.read<AudioService>().togglePlayPause();
   }
 
-  void _handleSave() {
-    setState(() => _isSaved = !_isSaved);
+  Future<void> _handleSave() async {
+    final song = context.read<AudioService>().currentSong;
+    final id = int.tryParse(song?.id ?? '');
+    if (id == null) return;
+    try {
+      await context.read<FavoritesProvider>().toggle(id);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Saved offerings could not be updated.')),
+      );
+    }
   }
 
   void _handlePlayerTap() {
@@ -71,9 +81,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final catalog = context.watch<CatalogProvider>();
+    final favorites = context.watch<FavoritesProvider>();
 
     return Consumer<AudioService>(
       builder: (context, audioService, child) {
+        final currentOfferingId = int.tryParse(audioService.currentSong?.id ?? '');
         return Scaffold(
           backgroundColor: const Color(0xFFF8F3EC),
           body: SafeArea(
@@ -96,7 +108,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     songDetails: audioService.currentSong!.artist,
                     thumbnailUrl: audioService.currentSong!.thumbnailUrl,
                     isPlaying: audioService.isPlaying,
-                    isSaved: _isSaved,
+                    isSaved: favorites.isFavorite(currentOfferingId),
                     onPlayPausePressed: _handlePlayPause,
                     onSavePressed: _handleSave,
                     onTap: _handlePlayerTap,
@@ -541,6 +553,9 @@ class _OfferingRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final favorites = context.watch<FavoritesProvider>();
+    final saved = favorites.isFavorite(offering.id);
+
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: const Color(0xFFFFDBCB),
@@ -554,16 +569,39 @@ class _OfferingRow extends StatelessWidget {
       subtitle: Text(
         '${offering.artistName} • ${_categoryLabel(offering.category)}',
       ),
-      trailing: offering.isPlayable
-          ? IconButton(
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: Icon(saved ? Icons.favorite : Icons.favorite_border),
+            color: const Color(0xFF9A4100),
+            tooltip: saved ? 'Remove from saved' : 'Save offering',
+            onPressed: () async {
+              try {
+                await favorites.toggle(offering.id, offering: offering);
+              } catch (_) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Saved offerings could not be updated.'),
+                  ),
+                );
+              }
+            },
+          ),
+          if (offering.isPlayable)
+            IconButton(
               icon: const Icon(Icons.play_arrow),
               color: const Color(0xFF9A4100),
               onPressed: onPlay,
             )
-          : const Text(
+          else
+            const Text(
               'Not recorded',
               style: TextStyle(fontSize: 11, color: Color(0xFF8A7267)),
             ),
+        ],
+      ),
       onTap: offering.isPlayable ? onPlay : null,
     );
   }
